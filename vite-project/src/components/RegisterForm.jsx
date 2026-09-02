@@ -98,7 +98,7 @@ export default function RegisterForm({ onSubmit }) {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="max-w-xl rounded-lg border border-border bg-surface-raised p-6"
+        className="w-full max-w-xl rounded-lg border border-border bg-surface-raised p-6"
     >
     <h2 className="text-base font-semibold mb-6">Register a gadget</h2>
 
