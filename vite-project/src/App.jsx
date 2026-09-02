@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import RegisterForm from './components/RegisterForm'
 import GadgetTable from './components/GadgetTable'
-
-let nextId = 1
+import ItemDetailCard from './components/ItemDetailCard'
 
 function App() {
   const [view, setView] = useState('register')
   const [items, setItems] = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
+  const [categoryFilter, setCategoryFilter] = useState('All')
+
+  const filteredItems =
+    categoryFilter === 'All' ? items : items.filter((i) => i.category === categoryFilter)
 
   function handleAddItem(item) {
-    setItems((prev) => [...prev, { id: nextId++, ...item }])
+    setItems((prev) => [...prev, { id: crypto.randomUUID(), ...item }])
     setView('registry')
   }
 
@@ -51,16 +54,34 @@ function App() {
 
         {view === 'registry' && (
           <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm text-text-muted">Filter:</span>
+              {['All', 'Smartphone', 'Laptop', 'Wearable', 'Audio'].map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCategoryFilter(c)}
+                  className={`rounded-md px-2.5 py-1 text-xs font-medium border transition-colors ${
+                    categoryFilter === c
+                      ? 'bg-accent text-white border-accent'
+                      : 'border-border text-text-muted hover:text-text'
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+
             <GadgetTable
-              items={items}
+              items={filteredItems}
               selectedId={selectedItem?.id}
-              onSelectRow={setSelectedItem}
+              onSelectRow={(item) =>
+                setSelectedItem((prev) => (prev?.id === item.id ? null : item))
+              }
             />
-            {selectedItem && (
-              <p className="mt-3 text-sm text-text-muted">
-                Selected: <span className="text-text font-medium">{selectedItem.gadgetName}</span>
-              </p>
-            )}
+
+            <div className="mt-4">
+              <ItemDetailCard selectedItem={selectedItem} />
+            </div>
           </div>
         )}
       </div>
