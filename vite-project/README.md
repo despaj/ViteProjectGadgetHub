@@ -1,16 +1,58 @@
-# React + Vite
+# Gadget Hub
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React registry app for tracking gadgets and their health ratings. Register devices through a validated form, then browse, search, sort, edit, and export them from a paginated table.
 
-Currently, two official plugins are available:
+**Live demo:** _add your deployed link here_
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![Gadget Hub screenshot](./docs/screenshot.png)
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Validated registration form with per-field errors on blur and on submit
+- Registry table with sorting, pagination, and keyboard-accessible rows
+- Search by name, brand, or manufacturer, plus category filter chips
+- Color-coded health ratings (Good, Fair, Poor) and summary stats
+- Edit and delete gadgets, with an inline delete confirmation
+- Data persists in `localStorage`, so it survives a page refresh
+- One-click sample data and CSV export of the current view
+- Responsive layout with ARIA labels and visible focus states
 
-## Expanding the ESLint configuration
+## Tech stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+React 19, Vite, Tailwind CSS v4, TanStack Table v8
+
+## Getting started
+
+```bash
+npm install
+npm run dev
+```
+
+Other scripts:
+
+```bash
+npm run build
+npm run preview
+npm run lint
+```
+
+## Project structure
+
+```
+src/
+  components/   RegisterForm, GadgetTable, ItemDetailCard, StatsBar, HealthBadge
+  lib/          constants, health rating helpers, localStorage hook, CSV export
+  App.jsx       app state and layout
+```
+
+## Design notes
+
+- The selected row is stored as an ID rather than a copy of the object, so the detail card never shows stale data after an edit.
+- Filtering and searching happen in `App`, while the table handles only sorting and pagination.
+- Form validation is a pure function, which keeps it easy to unit test.
+
+## Roadmap
+
+- Unit tests for validation and CSV export
+- Backend persistence with an API and database
+- Deploy to Vercel or Netlify
