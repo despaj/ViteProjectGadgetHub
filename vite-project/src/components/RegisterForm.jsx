@@ -19,8 +19,13 @@ function validate(form) {
     errors.gadgetName = 'Gadget name must be at least 3 characters.'
   }
 
-  if (!form.category) errors.category = 'Select a category.'
-  if (!form.manufacturer.trim()) errors.manufacturer = 'Manufacturer is required.'
+  if (!form.category) {
+    errors.category = 'Select a category.'
+  }
+
+  if (!form.manufacturer.trim()) {
+    errors.manufacturer = 'Manufacturer is required.'
+  }
 
   if (form.healthRating === '') {
     errors.healthRating = 'Health rating is required.'
@@ -31,94 +36,101 @@ function validate(form) {
     }
   }
 
-  if (!form.brandName.trim()) errors.brandName = 'Tech brand name is required.'
-  if (!form.userRole) errors.userRole = 'Select a user role.'
+  if (!form.brandName.trim()) {
+    errors.brandName = 'Tech brand name is required.'
+  }
+
+  if (!form.userRole) {
+    errors.userRole = 'Select a user role.'
+  }
 
   return errors
 }
 
-function Field({ id, label, error, children }) {
-  return (
-    <div>
-      <label className="block text-sm font-medium mb-1" htmlFor={id}>
-        {label}
-      </label>
-      {children}
-      {error && (
-        <p id={`${id}-error`} className="mt-1 text-xs text-danger">
-          {error}
-        </p>
-      )}
-    </div>
-  )
-}
-
-export default function RegisterForm({ item, onSubmit, onCancel }) {
-  const [form, setForm] = useState(
-    item ? { ...item, healthRating: String(item.healthRating) } : EMPTY_FORM,
-  )
+export default function RegisterForm({ onSubmit }) {
+  const [form, setForm] = useState(EMPTY_FORM)
   const [errors, setErrors] = useState({})
   const [touched, setTouched] = useState({})
 
-  const isEditing = Boolean(item)
-  const shownError = (name) => (touched[name] ? errors[name] : undefined)
-
-  function updateField(name, value) {
-    const next = { ...form, [name]: value }
+  function updateField(field, value) {
+    const next = { ...form, [field]: value }
     setForm(next)
-    if (touched[name]) setErrors(validate(next))
+    if (touched[field]) {
+      setErrors(validate(next))
+    }
   }
 
-  function handleBlur(name) {
-    setTouched((t) => ({ ...t, [name]: true }))
+  function handleBlur(field) {
+    setTouched((t) => ({ ...t, [field]: true }))
     setErrors(validate(form))
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
+  function handleSubmit(e) {
+    e.preventDefault()
     const nextErrors = validate(form)
     setErrors(nextErrors)
-    setTouched(Object.fromEntries(Object.keys(EMPTY_FORM).map((name) => [name, true])))
+    setTouched({
+      gadgetName: true,
+      category: true,
+      manufacturer: true,
+      healthRating: true,
+      brandName: true,
+      userRole: true,
+    })
 
     if (Object.keys(nextErrors).length > 0) return
 
     onSubmit({
-      gadgetName: form.gadgetName.trim(),
-      category: form.category,
-      manufacturer: form.manufacturer.trim(),
+      ...form,
       healthRating: Number(form.healthRating),
-      brandName: form.brandName.trim(),
-      userRole: form.userRole,
     })
+    setForm(EMPTY_FORM)
+    setTouched({})
+    setErrors({})
   }
 
-  const inputProps = (name) => ({
-    id: name,
-    value: form[name],
-    onChange: (e) => updateField(name, e.target.value),
-    onBlur: () => handleBlur(name),
-    'aria-invalid': Boolean(shownError(name)),
-    'aria-describedby': shownError(name) ? `${name}-error` : undefined,
-    className: `w-full rounded-md border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent ${
-      shownError(name) ? 'border-danger' : 'border-border'
-    }`,
-  })
+  const fieldClass = (field) =>
+    `w-full rounded-md border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-accent ${
+      errors[field] && touched[field] ? 'border-danger' : 'border-border'
+    }`
 
   return (
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="w-full max-w-xl rounded-lg border border-border bg-surface-raised p-6"
+        className="w-full max-w-xl rounded-lg border border-border bg-surface-raised p-6"
     >
-      <h2 className="text-base font-semibold mb-6">{isEditing ? 'Edit gadget' : 'Register a gadget'}</h2>
+    <h2 className="text-base font-semibold mb-6">Register a gadget</h2>
 
       <div className="space-y-4">
-        <Field id="gadgetName" label="Gadget name" error={shownError('gadgetName')}>
-          <input type="text" {...inputProps('gadgetName')} />
-        </Field>
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="gadgetName">
+            Gadget name
+          </label>
+          <input
+            id="gadgetName"
+            type="text"
+            value={form.gadgetName}
+            onChange={(e) => updateField('gadgetName', e.target.value)}
+            onBlur={() => handleBlur('gadgetName')}
+            className={fieldClass('gadgetName')}
+          />
+          {errors.gadgetName && touched.gadgetName && (
+            <p className="mt-1 text-xs text-danger">{errors.gadgetName}</p>
+          )}
+        </div>
 
-        <Field id="category" label="Category" error={shownError('category')}>
-          <select {...inputProps('category')}>
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="category">
+            Category
+          </label>
+          <select
+            id="category"
+            value={form.category}
+            onChange={(e) => updateField('category', e.target.value)}
+            onBlur={() => handleBlur('category')}
+            className={fieldClass('category')}
+          >
             <option value="">Select a category…</option>
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
@@ -126,19 +138,63 @@ export default function RegisterForm({ item, onSubmit, onCancel }) {
               </option>
             ))}
           </select>
-        </Field>
+          {errors.category && touched.category && (
+            <p className="mt-1 text-xs text-danger">{errors.category}</p>
+          )}
+        </div>
 
-        <Field id="manufacturer" label="Manufacturer" error={shownError('manufacturer')}>
-          <input type="text" {...inputProps('manufacturer')} />
-        </Field>
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="manufacturer">
+            Manufacturer
+          </label>
+          <input
+            id="manufacturer"
+            type="text"
+            value={form.manufacturer}
+            onChange={(e) => updateField('manufacturer', e.target.value)}
+            onBlur={() => handleBlur('manufacturer')}
+            className={fieldClass('manufacturer')}
+          />
+          {errors.manufacturer && touched.manufacturer && (
+            <p className="mt-1 text-xs text-danger">{errors.manufacturer}</p>
+          )}
+        </div>
 
-        <Field id="healthRating" label="Health rating (1–100)" error={shownError('healthRating')}>
-          <input type="number" min={1} max={100} {...inputProps('healthRating')} />
-        </Field>
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="healthRating">
+            Health rating (1–100)
+          </label>
+          <input
+            id="healthRating"
+            type="number"
+            min={1}
+            max={100}
+            value={form.healthRating}
+            onChange={(e) => updateField('healthRating', e.target.value)}
+            onBlur={() => handleBlur('healthRating')}
+            className={`${fieldClass('healthRating')} font-mono`}
+          />
+          {errors.healthRating && touched.healthRating && (
+            <p className="mt-1 text-xs text-danger">{errors.healthRating}</p>
+          )}
+        </div>
 
-        <Field id="brandName" label="Tech brand name" error={shownError('brandName')}>
-          <input type="text" {...inputProps('brandName')} />
-        </Field>
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="brandName">
+            Tech brand name
+          </label>
+          <input
+            id="brandName"
+            type="text"
+            value={form.brandName}
+            onChange={(e) => updateField('brandName', e.target.value)}
+            onBlur={() => handleBlur('brandName')}
+            className={fieldClass('brandName')}
+          />
+          {errors.brandName && touched.brandName && (
+            <p className="mt-1 text-xs text-danger">{errors.brandName}</p>
+          )}
+        </div>
 
         <fieldset>
           <legend className="block text-sm font-medium mb-1">User role</legend>
@@ -158,29 +214,18 @@ export default function RegisterForm({ item, onSubmit, onCancel }) {
               </label>
             ))}
           </div>
-          {shownError('userRole') && (
-            <p className="mt-1 text-xs text-danger">{shownError('userRole')}</p>
+          {errors.userRole && touched.userRole && (
+            <p className="mt-1 text-xs text-danger">{errors.userRole}</p>
           )}
         </fieldset>
       </div>
 
-      <div className="mt-6 flex gap-2">
-        <button
-          type="submit"
-          className="flex-1 rounded-md bg-accent py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-        >
-          {isEditing ? 'Save changes' : 'Add to registry'}
-        </button>
-        {isEditing && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-surface"
-          >
-            Cancel
-          </button>
-        )}
-      </div>
+      <button
+        type="submit"
+        className="mt-6 w-full rounded-md bg-accent py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+      >
+        Add to registry
+      </button>
     </form>
   )
 }
